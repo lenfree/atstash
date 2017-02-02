@@ -1,0 +1,8 @@
+stash_url: https://git02.ae.sda.corp.telstra.com
+
+origin: ssh://git@git02.ae.sda.corp.telstra.com/top/playbooks.git
+
+forked: ssh://git@git02.ae.sda.corp.telstra.com/~d713020/playbooks.git
+
+users:
+  - d713020
