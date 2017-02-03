@@ -2,9 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
+	"srcd.works/go-git.v4/config"
+
 	"github.com/codegangsta/cli"
+	"github.com/lenfree/atstash/git"
+	"github.com/lenfree/atstash/stash"
 )
 
 // GlobalFlags to expose all global flags if it exists.
@@ -28,6 +33,34 @@ func CommandNotFound(c *cli.Context, command string) {
 }
 
 func cmdPush(c *cli.Context) {
-	fmt.Println("test")
-	fmt.Fprintf(os.Stderr, "%s\n", "hello world")
+
+	refSpec, err := gitPush()
+	if err != nil {
+		log.Fatalf("Error %s pushing to remote\n", err.Error())
+	}
+
+	// test this out
+	createPR(refSpec)
+}
+
+func gitPush() (config.RefSpec, error) {
+	r := gitClient.New(originRepoName, forkedRepoName)
+	repo, _ := r.Repo()
+
+	var remote gitClient.Remotes
+
+	remote = r.GetRemote(repo)
+	refSpec, err := remote.PushCommit(repo)
+
+	if err != nil {
+		return "", err
+	}
+
+	return refSpec, nil
+}
+
+func createPR(ref config.RefSpec) {
+	stashClient := stashClient.New(stashUser, stashPass, stashURL, originSlug, forkedSlug, "TOP")
+	resp, _ := stashClient.CreatePR("TOP", ref)
+	fmt.Printf("%+#v\n", resp)
 }
