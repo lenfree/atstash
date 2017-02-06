@@ -5,31 +5,32 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"os/exec"
+	"strings"
+
+	"srcd.works/go-git.v4/config"
 )
 
 type StashConfig struct {
-	User       string
-	Password   string
-	Host       string
-	ToSlug     string
-	FromSlug   string
-	FromRef    string
-	ProjectKey string
+	User        string
+	Password    string
+	Host        string
+	FromRef     string
+	ProjectKey  string
+	RepoKey     string
+	PrReviewers []string
 }
 
 const apiURI = "/rest/api/1.0/projects"
 
-func New(u, p, URL, toSlug, fromSlug, projectKey string) StashConfig {
+func New(c StashConfig) StashConfig {
 	return StashConfig{
-		User:       u,
-		Password:   p,
-		Host:       URL,
-		ToSlug:     toSlug,
-		FromSlug:   fromSlug,
-		ProjectKey: projectKey,
+		User:        c.User,
+		Password:    c.Password,
+		Host:        c.Host,
+		ProjectKey:  c.ProjectKey,
+		RepoKey:     c.RepoKey,
+		PrReviewers: c.PrReviewers,
 	}
 }
 
@@ -51,73 +52,72 @@ func (s *StashConfig) Get(uri string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *StashConfig) CreatePR(projectKey, branch string) (*http.Response, error) {
-	uri := apiURI + "/" + projectKey + "/repos/" + s.ToSlug + "/pull-requests"
+func (s *StashConfig) CreatePR(ref config.RefSpec) (*http.Response, error) {
+	uri := apiURI + "/" + s.ProjectKey + "/repos/" + s.RepoKey + "/pull-requests"
+
 	transCfg := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	currentBranch, err := getBranch()
-	if err != nil {
-		log.Fatalf("Error %s\n", err.Error())
+	// ref returns refs/heads/branch:refs/heads/branch
+	fromRefID := strings.Split(ref.String(), ":")[0]
+	prTitle := strings.Split(strings.Split(ref.String(), "/")[2], ":")[0]
+	fromRefUser := "~" + s.User
+
+	var reviewers []Reviewer
+
+	for _, u := range s.PrReviewers {
+		reviewer := Reviewer{
+			User: Usr{
+				Name: u,
+			},
+		}
+		reviewers = append(reviewers, reviewer)
 	}
 
 	data := Pr{
-		Title:       "Talking Nerdy",
-		Description: "It’s a kludge, but put the tuple from the database in the cache.",
+		Title:       prTitle,
+		Description: "",
 		State:       "OPEN",
 		Open:        true,
 		Closed:      false,
 		FromRef: Ref{
-			ID: "refs/heads/" + currentBranch,
+			ID: fromRefID,
 			Repository: Repo{
-				Slug: s.FromSlug,
+				Slug: s.RepoKey,
 				Name: "",
 				Project: Proj{
-					Key: s.ProjectKey,
+					Key: fromRefUser,
 				},
 			},
 		},
 		ToRef: Ref{
 			ID: "refs/heads/master",
 			Repository: Repo{
-				Slug: "s.ToSlug",
+				Slug: s.RepoKey,
 				Name: "",
 				Project: Proj{
-					Key: s.ProjectKey,
+					Key: "F",
 				},
 			},
 		},
-		Locked: false,
-		Reviewers: []Reviewer{
-			Reviewer{
-				User: Usr{
-					Name: "d713020",
-				},
-			},
-		},
+		Locked:    false,
+		Reviewers: reviewers,
 	}
 
 	body := new(bytes.Buffer)
 	json.NewEncoder(body).Encode(data)
-	req, err := http.NewRequest("POST", s.Host+apiURI+uri, body)
-	req.Header.Set("Content-Type", "application/json")
+	req, err := http.NewRequest("POST", s.Host+uri, body)
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.SetBasicAuth(s.User, s.Password)
 	client := &http.Client{Transport: transCfg}
 
-	resp, err := client.Do(req)
+	res, err := client.Do(req)
 
-	fmt.Printf("resp %+#v", resp)
 	if err != nil {
+		fmt.Printf("err %+#v", err.Error())
 		return nil, err
 	}
-	return resp, nil
-}
 
-func getBranch() (string, error) {
-	output, err := exec.Command("sh", "-c", "git branch").Output()
-	if err != nil {
-		return "", err
-	}
-	return string(output), nil
+	return res, nil
 }

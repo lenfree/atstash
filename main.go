@@ -14,9 +14,9 @@ var stashPass string
 var stashURL string
 var originRepoName string
 var forkedRepoName string
-var originSlug string
-var forkedSlug string
-var users []string
+var projectKey string
+var repoKey string
+var reviewers []string
 
 func init() {
 	err := godotenv.Load()
@@ -28,10 +28,9 @@ func init() {
 	stashURL = os.Getenv("STASH_URL")
 	originRepoName = os.Getenv("ORIGIN_REPO_NAME")
 	forkedRepoName = os.Getenv("FORKED_REPO_NAME")
-	originSlug = os.Getenv("ORIGIN_REPO_SLUG")
-	forkedSlug = os.Getenv("FORKED_REPO_SLUG")
-	users = strings.Split(os.Getenv("USERS"), ":")
-	users = strings.Split(os.Getenv("USERS"), ":")
+	reviewers = strings.Split(os.Getenv("REVIEWERS"), ":")
+	projectKey = os.Getenv("PROJECT_KEY")
+	repoKey = os.Getenv("REPO_KEY")
 }
 
 func main() {

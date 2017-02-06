@@ -75,40 +75,19 @@ func (c *Config) GetRemote(r *git.Repository) Remotes {
 	}
 }
 
-func (c *Remotes) PushCommit(r *git.Repository) error {
+func (c *Remotes) PushCommit(r *git.Repository) (config.RefSpec, error) {
 
 	headRef, _ := r.Head()
-	refspec := config.RefSpec(headRef.Name() + ":" + headRef.Name())
+	refSpec := config.RefSpec(headRef.Name() + ":" + headRef.Name())
 
-	log.Printf("refspec %s\n", refspec)
-	err := r.Push(&git.PushOptions{
-		RemoteName: c.Remote,
-		RefSpecs:   []config.RefSpec{refspec},
-	})
-	if err != nil {
-		return err
-	}
-
-	//	fmt.Printf("HEAD %s\n", headRef.Name())
-
-	//	refs, _ := r.References()
-	//
-	//	err := refs.ForEach(func(ref *plumbing.Reference) error {
-	//		// The HEAD is omitted in a `git show-ref` so we ignore the symbolic
-	//		// references, the HEAD
-	//		//		if ref.Type() == plumbing.SymbolicReference {
-	//		//			return nil
-	//		//		}
-	//
-	//		fmt.Println("x: ", ref.Type())
-	//
-	//		//	fmt.Printf("ref %s\n", ref.Name())
-	//		//	refName := ref.Name()
-	//		//	a := refName.Short()
-	//		//	fmt.Printf("a %s\n", a)
-	//		return nil
-	//	})
-	return nil
+	//err := r.Push(&git.PushOptions{
+	//	RemoteName: c.Remote,
+	//	RefSpecs:   []config.RefSpec{refSpec},
+	//})
+	//if err != nil {
+	//	return "", err
+	//}
+	return refSpec, nil
 }
 
 func toLower(s string) string {

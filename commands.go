@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	"srcd.works/go-git.v4/config"
@@ -40,7 +43,17 @@ func cmdPush(c *cli.Context) {
 	}
 
 	// test this out
-	createPR(refSpec)
+	res := createPR(refSpec)
+	body := stashClient.PrRes{}
+	defer res.Body.Close()
+	resBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "API Post Method Response Status Code: %s\n", string(res.StatusCode))
+		fmt.Fprintf(os.Stdout, "API Post Method Response Body: %s\n", string(resBody))
+	}
+	json.Unmarshal(resBody, &body)
+	fmt.Fprintf(os.Stdout, "PR Title: %s/%s\n", stashURL, body.Title)
+	fmt.Fprintf(os.Stdout, "PR URL: stashURL/%s\n", body.Link.URL)
 }
 
 func gitPush() (config.RefSpec, error) {
@@ -59,8 +72,20 @@ func gitPush() (config.RefSpec, error) {
 	return refSpec, nil
 }
 
-func createPR(ref config.RefSpec) {
-	stashClient := stashClient.New(stashUser, stashPass, stashURL, originSlug, forkedSlug, "TOP")
-	resp, _ := stashClient.CreatePR("TOP", ref)
-	fmt.Printf("%+#v\n", resp)
+func createPR(ref config.RefSpec) *http.Response {
+	stashConfig := stashClient.StashConfig{
+		User:        stashUser,
+		Password:    stashPass,
+		Host:        stashURL,
+		ProjectKey:  projectKey,
+		RepoKey:     repoKey,
+		PrReviewers: reviewers,
+	}
+
+	client := stashClient.New(stashConfig)
+	res, err := client.CreatePR(ref)
+	if err != nil {
+		fmt.Printf("Error %ss", err.Error())
+	}
+	return res
 }

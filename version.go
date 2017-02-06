@@ -1,4 +1,4 @@
 package main
 
 const Name string = "atstash"
-const Version string = "0.0.1"
+const Version string = "0.1.0"

@@ -1,13 +1,27 @@
 # atstash
 =========
 
-A cli tool that helps large team to create a PR and include all members
+A cli tool that help large team to create a PR and include all members
 automatically. Unfortunately, Atlassian Stash/Bitbucket does not support
 groups. Inspired by Stashify, however, this is suppose to just be simple
 cli.
 
 ## Usage
 
+```bash
+$ cat >>.env<<EOF
+STASH_USERNAME="<change_me>"
+STASH_PASSWORD="<change_me>"
+STASH_URL="<stash_url>"
+ORIGIN_REPO_NAME="remote_name"
+PROJECT_KEY="project_key"
+REPO_KEY="repo_name"
+FORKED_REPO_NAME="forked_remote_name"
+REVIEWERS="<username>"
+EOF
+
+$ atstash --help
+```
 ## Install
 
 To install, use `go get`:
@@ -16,15 +30,22 @@ To install, use `go get`:
 $ go get -d github.com/lenfree/atstash
 ```
 
+or 
+
+```bash
+$ curl -O <binary-release-URL>
+$ <path_to_binary> --help
+```
+
 ## Contribution
 
 1. Fork ([https://github.com/lenfree/atstash/fork](https://github.com/lenfree/atstash/fork))
-1. Create a feature branch
-1. Commit your changes
-1. Rebase your local changes against the master branch
-1. Run test suite with the `go test ./...` command and confirm that it passes
-1. Run `gofmt -s`
-1. Create a new Pull Request
+2. Create a feature branch
+3. Commit your changes
+4. Rebase your local changes against the master branch
+5. TODO: Run test suite with the `go test ./...` command and confirm that it passes
+6. Run `gofmt -s`
+7. Create a new Pull Request
 
 ## Author
 
