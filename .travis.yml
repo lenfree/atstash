@@ -8,7 +8,6 @@ deploy:
   file:
   - release/atstash-linux-amd64
   - release/atstash-darwin-amd64
-  - release/atstash-linux-arm
   on:
     repo: lenfree/atstash
     tags: true
