@@ -6,6 +6,10 @@ automatically. Unfortunately, Atlassian Stash/Bitbucket does not support
 groups. Inspired by Stashify, however, this is suppose to just be simple
 cli.
 
+Build Status: [![Build Status](https://travis-ci.org/lenfree/atstash.svg?branch=master)](https://travis-ci.org/lenfree/atstash)
+
+[Binary Releases](https://github.com/lenfree/atstash/releases)
+
 ## Usage
 
 ```bash
