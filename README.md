@@ -37,7 +37,7 @@ $ go get -d github.com/lenfree/atstash
 or 
 
 ```bash
-$ curl -O <binary-release-URL>
+$ curl -o <packagename> -L https://github.com/lenfree/atstash/releases/download/<version>/atstash-<darwin|linux>-amd64
 $ <path_to_binary> --help
 ```
 
