@@ -33,8 +33,7 @@ func New(o, f string) Config {
 func (c *Config) Repo() (*git.Repository, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Printf("Error %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("Error %s\n", err.Error())
 	}
 	repository, err := git.PlainOpen(cwd)
 	if err != nil {
@@ -80,13 +79,13 @@ func (c *Remotes) PushCommit(r *git.Repository) (config.RefSpec, error) {
 	headRef, _ := r.Head()
 	refSpec := config.RefSpec(headRef.Name() + ":" + headRef.Name())
 
-	//err := r.Push(&git.PushOptions{
-	//	RemoteName: c.Remote,
-	//	RefSpecs:   []config.RefSpec{refSpec},
-	//})
-	//if err != nil {
-	//	return "", err
-	//}
+	err := r.Push(&git.PushOptions{
+		RemoteName: c.Remote,
+		RefSpecs:   []config.RefSpec{refSpec},
+	})
+	if err != nil {
+		return refSpec, err
+	}
 	return refSpec, nil
 }
 

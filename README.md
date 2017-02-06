@@ -21,7 +21,7 @@ ORIGIN_REPO_NAME="remote_name"
 PROJECT_KEY="project_key"
 REPO_KEY="repo_name"
 FORKED_REPO_NAME="forked_remote_name"
-REVIEWERS="<username>"
+REVIEWERS="<username1>:<username2>:<username3>"
 EOF
 
 $ atstash --help

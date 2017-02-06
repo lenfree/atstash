@@ -179,3 +179,11 @@ type PrRes struct {
 		} `json:"self"`
 	} `json:"links"`
 }
+
+type PrStatusExists struct {
+	Errors []struct {
+		Context       interface{} `json:"context"`
+		Message       string      `json:"message"`
+		ExceptionName interface{} `json:"exceptionName"`
+	} `json:"errors"`
+}

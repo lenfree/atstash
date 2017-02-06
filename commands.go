@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"srcd.works/go-git.v4/config"
 
@@ -38,22 +39,28 @@ func CommandNotFound(c *cli.Context, command string) {
 func cmdPush(c *cli.Context) {
 
 	refSpec, err := gitPush()
-	if err != nil {
+	if err != nil && strings.ToLower(err.Error()) != "already up-to-date" {
 		log.Fatalf("Error %s pushing to remote\n", err.Error())
 	}
 
-	// test this out
 	res := createPR(refSpec)
-	body := stashClient.PrRes{}
 	defer res.Body.Close()
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "API Post Method Response Status Code: %s\n", string(res.StatusCode))
-		fmt.Fprintf(os.Stdout, "API Post Method Response Body: %s\n", string(resBody))
+		log.Fatalf("API Post Method Response Status Code: %s\n", string(res.StatusCode))
+		log.Fatalf("API Post Method Response Body: %s\n", string(resBody))
 	}
+
+	if res.StatusCode == 409 {
+		body := stashClient.PrStatusExists{}
+		json.Unmarshal(resBody, &body)
+		log.Fatalf("Error: %s", body.Errors[0].Message)
+	}
+
+	body := stashClient.PrRes{}
 	json.Unmarshal(resBody, &body)
-	fmt.Fprintf(os.Stdout, "PR Title: %s/%s\n", stashURL, body.Title)
-	fmt.Fprintf(os.Stdout, "PR URL: stashURL/%s\n", body.Link.URL)
+	log.Printf("PR Title: %s\n", body.Title)
+	log.Printf("PR URL: %s/%s\n", stashURL, body.Link.URL)
 }
 
 func gitPush() (config.RefSpec, error) {
@@ -66,7 +73,7 @@ func gitPush() (config.RefSpec, error) {
 	refSpec, err := remote.PushCommit(repo)
 
 	if err != nil {
-		return "", err
+		return refSpec, err
 	}
 
 	return refSpec, nil
