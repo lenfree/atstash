@@ -61,7 +61,8 @@ func (s *StashConfig) CreatePR(ref config.RefSpec) (*http.Response, error) {
 
 	// ref returns refs/heads/branch:refs/heads/branch
 	fromRefID := strings.Split(ref.String(), ":")[0]
-	prTitle := strings.Split(strings.Split(ref.String(), "/")[2], ":")[0]
+	prTitle := strings.SplitAfterN(fromRefID, "/", 3)
+
 	fromRefUser := "~" + s.User
 
 	var reviewers []Reviewer
@@ -76,7 +77,7 @@ func (s *StashConfig) CreatePR(ref config.RefSpec) (*http.Response, error) {
 	}
 
 	data := Pr{
-		Title:       prTitle,
+		Title:       prTitle[len(prTitle)-1],
 		Description: "",
 		State:       "OPEN",
 		Open:        true,
@@ -97,7 +98,7 @@ func (s *StashConfig) CreatePR(ref config.RefSpec) (*http.Response, error) {
 				Slug: s.RepoKey,
 				Name: "",
 				Project: Proj{
-					Key: "F",
+					Key: s.ProjectKey,
 				},
 			},
 		},
