@@ -7,9 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
-
-	"srcd.works/go-git.v4/config"
 
 	"github.com/codegangsta/cli"
 	"github.com/lenfree/atstash/git"
@@ -22,10 +19,10 @@ var GlobalFlags = []cli.Flag{}
 // Commands is a slice of cli.Command to load.
 var Commands = []cli.Command{
 	{
-		Name:    "push",
-		Aliases: []string{"p"},
-		Usage:   "Push current branch to forked repo",
-		Action:  cmdPush,
+		Name:    "pr",
+		Aliases: []string{"pr"},
+		Usage:   "Create a Stash PR from remote fork",
+		Action:  cmdPr,
 		Flags:   []cli.Flag{},
 	},
 }
@@ -36,16 +33,21 @@ func CommandNotFound(c *cli.Context, command string) {
 	os.Exit(2)
 }
 
-func cmdPush(c *cli.Context) {
+func cmdPr(c *cli.Context) {
 
-	refSpec, err := gitPush()
-	if err != nil && strings.ToLower(err.Error()) != "already up-to-date" {
-		log.Fatalf("Error %s pushing to remote\n", err.Error())
+	branch, err := gitQuery()
+	if err != nil {
+		log.Fatalf("Error: %s\n", err.Error())
 	}
 
-	res := createPR(refSpec)
+	res, err := createPR(branch)
+	if err != nil {
+		fmt.Printf("Error %ss", err.Error())
+	}
+
 	defer res.Body.Close()
 	resBody, err := ioutil.ReadAll(res.Body)
+
 	if err != nil {
 		log.Fatalf("API Post Method Response Status Code: %s\n", string(res.StatusCode))
 		log.Fatalf("API Post Method Response Body: %s\n", string(resBody))
@@ -63,23 +65,26 @@ func cmdPush(c *cli.Context) {
 	log.Printf("PR URL: %s/%s\n", stashURL, body.Link.URL)
 }
 
-func gitPush() (config.RefSpec, error) {
+func gitQuery() (string, error) {
 	r := gitClient.New(originRepoName, forkedRepoName)
-	repo, _ := r.Repo()
-
-	var remote gitClient.Remotes
-
-	remote = r.GetRemote(repo)
-	refSpec, err := remote.PushCommit(repo)
+	repo, err := r.Repo()
 
 	if err != nil {
-		return refSpec, err
+		log.Fatalf("Fetch repo error: %sn", err.Error())
 	}
 
-	return refSpec, nil
+	ref, err := r.GetHead(repo)
+
+	branch, err := r.GetBranch(ref)
+
+	if err != nil {
+		return "", err
+	}
+
+	return branch, nil
 }
 
-func createPR(ref config.RefSpec) *http.Response {
+func createPR(branch string) (*http.Response, error) {
 	stashConfig := stashClient.StashConfig{
 		User:        stashUser,
 		Password:    stashPass,
@@ -90,9 +95,9 @@ func createPR(ref config.RefSpec) *http.Response {
 	}
 
 	client := stashClient.New(stashConfig)
-	res, err := client.CreatePR(ref)
+	res, err := client.CreatePR(branch)
 	if err != nil {
-		fmt.Printf("Error %ss", err.Error())
+		return nil, err
 	}
-	return res
+	return res, nil
 }

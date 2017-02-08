@@ -3,8 +3,8 @@
 
 A cli tool that help large team to create a PR and include all members
 automatically. Unfortunately, Atlassian Stash/Bitbucket does not support
-groups. Inspired by Stashify, however, this is suppose to just be simple
-cli.
+groups. Inspired by Stashify, however, this is suppose to just be a
+simple cli.
 
 Build Status: [![Build Status](https://travis-ci.org/lenfree/atstash.svg?branch=master)](https://travis-ci.org/lenfree/atstash)
 

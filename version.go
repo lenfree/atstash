@@ -1,4 +1,7 @@
 package main
 
+// Name is the application name
 const Name string = "atstash"
-const Version string = "0.1.2"
+
+// Version is the application release version
+const Version string = "0.1.3"

@@ -6,9 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
-
-	"srcd.works/go-git.v4/config"
 )
 
 type StashConfig struct {
@@ -52,7 +49,7 @@ func (s *StashConfig) Get(uri string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *StashConfig) CreatePR(ref config.RefSpec) (*http.Response, error) {
+func (s *StashConfig) CreatePR(branch string) (*http.Response, error) {
 	uri := apiURI + "/" + s.ProjectKey + "/repos/" + s.RepoKey + "/pull-requests"
 
 	transCfg := &http.Transport{
@@ -60,8 +57,7 @@ func (s *StashConfig) CreatePR(ref config.RefSpec) (*http.Response, error) {
 	}
 
 	// ref returns refs/heads/branch:refs/heads/branch
-	fromRefID := strings.Split(ref.String(), ":")[0]
-	prTitle := strings.SplitAfterN(fromRefID, "/", 3)
+	fromRef := "refs/heads/" + branch
 
 	fromRefUser := "~" + s.User
 
@@ -77,13 +73,13 @@ func (s *StashConfig) CreatePR(ref config.RefSpec) (*http.Response, error) {
 	}
 
 	data := Pr{
-		Title:       prTitle[len(prTitle)-1],
+		Title:       fromRef,
 		Description: "",
 		State:       "OPEN",
 		Open:        true,
 		Closed:      false,
 		FromRef: Ref{
-			ID: fromRefID,
+			ID: fromRef,
 			Repository: Repo{
 				Slug: s.RepoKey,
 				Name: "",

@@ -2,18 +2,43 @@
 
 Initial release
 
+## 0.1.0 (2017-02-06)
+
 ### Added
 
-- Add Fundamental features
+- Add Stash PR
+- Add Git push
 
-### Deprecated
+## 0.1.1 (2017-02-07)
 
-- Nothing
-
-### Removed
-
-- Nothing
+Bugfix release
 
 ### Fixed
 
-- Nothing
+- Catch git push up-to-date error
+- Catch PR exists error
+
+## 0.1.2 (2017-02-07) 
+
+Bugfix release 
+
+### Fixed
+
+- Fix hardcoded target project key for Stash PR
+- Fix branch name from refs
+
+
+## 0.1.3 (2017-02-08)
+
+This is a working version that only make a Stash PR
+and get rid of git push which is not the purpose of
+this tool
+
+### Added
+
+- Replace push with pr since this only does a PR
+- Use git2go package to query git branch and remotes
+
+### Removed
+
+- Remove git push to keep it simple

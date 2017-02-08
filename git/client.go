@@ -1,25 +1,14 @@
 package gitClient
 
 import (
-	"log"
 	"os"
 
-	"strings"
-
-	git "srcd.works/go-git.v4"
-	"srcd.works/go-git.v4/config"
+	"gopkg.in/libgit2/git2go.v25"
 )
 
 type Config struct {
 	Origin string
 	Forked string
-}
-
-type Remotes struct {
-	Origin    string
-	OriginURL string
-	Remote    string
-	RemoteURL string
 }
 
 // New returns git config
@@ -33,9 +22,9 @@ func New(o, f string) Config {
 func (c *Config) Repo() (*git.Repository, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Error %s\n", err.Error())
+		return nil, err
 	}
-	repository, err := git.PlainOpen(cwd)
+	repository, err := git.OpenRepository(cwd)
 	if err != nil {
 		return nil, err
 	}
@@ -43,52 +32,26 @@ func (c *Config) Repo() (*git.Repository, error) {
 
 }
 
-// GetRemote returns origin and forked remote
-func (c *Config) GetRemote(r *git.Repository) Remotes {
-
-	var origin string
-	var remote string
-	var originURL string
-	var remoteURL string
-
-	remotes, _ := r.Remotes()
-
-	for _, r := range remotes {
-		rConfig := r.Config()
-
-		if toLower(c.Forked) == toLower(rConfig.Name) {
-			remote = rConfig.Name
-			remoteURL = rConfig.URL
-		}
-
-		if toLower(c.Origin) == toLower(rConfig.Name) {
-			origin = rConfig.Name
-			originURL = rConfig.URL
-		}
-	}
-	return Remotes{
-		Origin:    origin,
-		OriginURL: originURL,
-		Remote:    remote,
-		RemoteURL: remoteURL,
-	}
+func (c *Config) GetRemotes(r *git.Repository) *git.RemoteCollection {
+	remotes := r.Remotes
+	return &remotes
 }
 
-func (c *Remotes) PushCommit(r *git.Repository) (config.RefSpec, error) {
-
-	headRef, _ := r.Head()
-	refSpec := config.RefSpec(headRef.Name() + ":" + headRef.Name())
-
-	err := r.Push(&git.PushOptions{
-		RemoteName: c.Remote,
-		RefSpecs:   []config.RefSpec{refSpec},
-	})
+func (c *Config) GetHead(r *git.Repository) (*git.Reference, error) {
+	head, err := r.Head()
 	if err != nil {
-		return refSpec, err
+		return nil, err
 	}
-	return refSpec, nil
+	return head, nil
 }
 
-func toLower(s string) string {
-	return strings.ToLower(s)
+func (c *Config) GetBranch(r *git.Reference) (string, error) {
+	branch := r.Branch()
+
+	name, err := branch.Name()
+	if err != nil {
+		return "", err
+	}
+
+	return name, nil
 }
