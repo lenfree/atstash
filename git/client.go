@@ -2,8 +2,10 @@ package gitClient
 
 import (
 	"os"
+	"strings"
 
-	"gopkg.in/libgit2/git2go.v25"
+	"srcd.works/go-git.v4"
+	"srcd.works/go-git.v4/plumbing"
 )
 
 type Config struct {
@@ -24,7 +26,7 @@ func (c *Config) Repo() (*git.Repository, error) {
 	if err != nil {
 		return nil, err
 	}
-	repository, err := git.OpenRepository(cwd)
+	repository, err := git.PlainOpen(cwd)
 	if err != nil {
 		return nil, err
 	}
@@ -32,12 +34,7 @@ func (c *Config) Repo() (*git.Repository, error) {
 
 }
 
-func (c *Config) GetRemotes(r *git.Repository) *git.RemoteCollection {
-	remotes := r.Remotes
-	return &remotes
-}
-
-func (c *Config) GetHead(r *git.Repository) (*git.Reference, error) {
+func (c *Config) GetHead(r *git.Repository) (*plumbing.Reference, error) {
 	head, err := r.Head()
 	if err != nil {
 		return nil, err
@@ -45,13 +42,11 @@ func (c *Config) GetHead(r *git.Repository) (*git.Reference, error) {
 	return head, nil
 }
 
-func (c *Config) GetBranch(r *git.Reference) (string, error) {
-	branch := r.Branch()
+func (c *Config) GetBranch(r *plumbing.Reference) string {
+	ref := r.Name()
 
-	name, err := branch.Name()
-	if err != nil {
-		return "", err
-	}
+	// ref returns refs/heads/branch:refs/heads/branch
+	branch := strings.SplitAfterN(strings.Split(ref.String(), ":")[0], "/", 3)
 
-	return name, nil
+	return branch[len(branch)-1]
 }

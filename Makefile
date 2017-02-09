@@ -8,7 +8,7 @@ install:
 	go get -v
 
 .PHONY: script
-script: install
+script:
 	go vet ./...
 	go test -v -race ./...
 

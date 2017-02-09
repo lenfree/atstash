@@ -92,12 +92,11 @@ func gitQuery() (string, error) {
 	}
 
 	ref, err := r.GetHead(repo)
-
-	branch, err := r.GetBranch(ref)
-
 	if err != nil {
-		return "", err
+		return "", nil
 	}
+
+	branch := r.GetBranch(ref)
 
 	return branch, nil
 }
