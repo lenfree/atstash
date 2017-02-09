@@ -10,6 +10,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/lenfree/atstash/git"
+	"github.com/lenfree/atstash/slackHook"
 	"github.com/lenfree/atstash/stash"
 )
 
@@ -63,6 +64,23 @@ func cmdPr(c *cli.Context) {
 	json.Unmarshal(resBody, &body)
 	log.Printf("PR Title: %s\n", body.Title)
 	log.Printf("PR URL: %s/%s\n", stashURL, body.Link.URL)
+
+	slackClient := slackHook.New(slackToken, slackChannel)
+
+	channel, err := slackClient.GetChannel()
+	if err != nil {
+		log.Fatalf("Error: %s\n", err.Error())
+	}
+
+	slackData := slackHook.Data{
+		Message:   "Pull Request " + stashURL + "/" + body.Link.URL,
+		ChannelID: channel.Id,
+	}
+
+	err = slackClient.PostMessage(&slackData)
+	if err != nil {
+		log.Fatalf("Error: %s\n", err.Error())
+	}
 }
 
 func gitQuery() (string, error) {

@@ -73,7 +73,7 @@ func (s *StashConfig) CreatePR(branch string) (*http.Response, error) {
 	}
 
 	data := Pr{
-		Title:       fromRef,
+		Title:       branch,
 		Description: "",
 		State:       "OPEN",
 		Open:        true,

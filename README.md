@@ -14,6 +14,8 @@ Build Status: [![Build Status](https://travis-ci.org/lenfree/atstash.svg?branch=
 
 ```bash
 $ cat >>.env<<EOF
+SLACK_TOKEN="<SLACK_TOKEN>"
+SLACK_CHANNEL="<SLACK_GROUP>"
 STASH_USERNAME="<change_me>"
 STASH_PASSWORD="<change_me>"
 STASH_URL="<stash_url>"

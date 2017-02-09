@@ -17,6 +17,8 @@ var forkedRepoName string
 var projectKey string
 var repoKey string
 var reviewers []string
+var slackToken string
+var slackChannel string
 
 func init() {
 	err := godotenv.Load()
@@ -31,6 +33,8 @@ func init() {
 	reviewers = strings.Split(os.Getenv("REVIEWERS"), ":")
 	projectKey = os.Getenv("PROJECT_KEY")
 	repoKey = os.Getenv("REPO_KEY")
+	slackToken = os.Getenv("SLACK_TOKEN")
+	slackChannel = os.Getenv("SLACK_CHANNEL")
 }
 
 func main() {

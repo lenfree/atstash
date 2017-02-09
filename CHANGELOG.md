@@ -32,12 +32,13 @@ Bugfix release
 
 This is a working version that only make a Stash PR
 and get rid of git push which is not the purpose of
-this tool
+this tool and makes a Slack Post request to a group
 
 ### Added
 
 - Replace push with pr since this only does a PR
 - Use git2go package to query git branch and remotes
+- Add Webhook to Slack PR
 
 ### Removed
 
