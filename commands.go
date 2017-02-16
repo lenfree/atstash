@@ -35,15 +35,13 @@ func CommandNotFound(c *cli.Context, command string) {
 }
 
 func cmdPr(c *cli.Context) {
-
 	branch, err := gitQuery()
 	if err != nil {
 		log.Fatalf("Error: %s\n", err.Error())
 	}
-
 	res, err := createPR(branch)
 	if err != nil {
-		fmt.Printf("Error %ss", err.Error())
+		fmt.Printf("Error %s\n", err.Error())
 	}
 
 	defer res.Body.Close()
@@ -83,7 +81,7 @@ func cmdPr(c *cli.Context) {
 	}
 }
 
-func gitQuery() (string, error) {
+func gitQuery() (stashClient.StashData, error) {
 	r := gitClient.New(originRepoName, forkedRepoName)
 	repo, err := r.Repo()
 
@@ -91,17 +89,18 @@ func gitQuery() (string, error) {
 		log.Fatalf("Fetch repo error: %sn", err.Error())
 	}
 
+	var data stashClient.StashData
 	ref, err := r.GetHead(repo)
 	if err != nil {
-		return "", nil
+		return data, err
 	}
 
-	branch := r.GetBranch(ref)
-
-	return branch, nil
+	data.Commit, _ = repo.Commit(ref.Hash())
+	data.Branch = r.GetBranch(ref)
+	return data, nil
 }
 
-func createPR(branch string) (*http.Response, error) {
+func createPR(s stashClient.StashData) (*http.Response, error) {
 	stashConfig := stashClient.StashConfig{
 		User:        stashUser,
 		Password:    stashPass,
@@ -112,7 +111,7 @@ func createPR(branch string) (*http.Response, error) {
 	}
 
 	client := stashClient.New(stashConfig)
-	res, err := client.CreatePR(branch)
+	res, err := client.CreatePR(s)
 	if err != nil {
 		return nil, err
 	}

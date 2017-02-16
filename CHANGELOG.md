@@ -43,3 +43,11 @@ this tool and makes a Slack Post request to a group
 ### Removed
 
 - Remove git push to keep it simple
+
+## 0.1.4 (2017-02-16)
+
+Fix bug where Stash PR description with commit message
+
+### Fixed
+
+- Empty description when creating PR
