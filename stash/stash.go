@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"srcd.works/go-git.v4/plumbing/object"
 )
 
 type StashConfig struct {
@@ -16,6 +18,11 @@ type StashConfig struct {
 	ProjectKey  string
 	RepoKey     string
 	PrReviewers []string
+}
+
+type StashData struct {
+	Branch string
+	Commit *object.Commit
 }
 
 const apiURI = "/rest/api/1.0/projects"
@@ -49,7 +56,7 @@ func (s *StashConfig) Get(uri string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *StashConfig) CreatePR(branch string) (*http.Response, error) {
+func (s *StashConfig) CreatePR(d StashData) (*http.Response, error) {
 	uri := apiURI + "/" + s.ProjectKey + "/repos/" + s.RepoKey + "/pull-requests"
 
 	transCfg := &http.Transport{
@@ -57,7 +64,7 @@ func (s *StashConfig) CreatePR(branch string) (*http.Response, error) {
 	}
 
 	// ref returns refs/heads/branch:refs/heads/branch
-	fromRef := "refs/heads/" + branch
+	fromRef := "refs/heads/" + d.Branch
 
 	fromRefUser := "~" + s.User
 
@@ -73,8 +80,8 @@ func (s *StashConfig) CreatePR(branch string) (*http.Response, error) {
 	}
 
 	data := Pr{
-		Title:       branch,
-		Description: "",
+		Title:       d.Branch,
+		Description: d.Commit.Message,
 		State:       "OPEN",
 		Open:        true,
 		Closed:      false,
